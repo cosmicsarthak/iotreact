@@ -17,7 +17,7 @@ const database = FirebaseConfig();
 export default function FirebaseCrud() {
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
-  let [isDoorLocked, setIsDoorLocked] = useState("");
+  let [sensorDetect, setsensorDetect] = useState("");
   let [unlockDoor, setUnlockDoor] = useState("");
 
   let isNullOrWhiteSpaces = (value) => {
@@ -39,7 +39,7 @@ export default function FirebaseCrud() {
         if (snapshot.exists()) {
           update(ref(database, "/Customer/" + username), {
             password: password,
-            isDoorLocked: isDoorLocked,
+            sensorDetect: sensorDetect,
             unlockDoorFunc: unlockDoor,
           })
             .then(() => {
@@ -89,7 +89,7 @@ export default function FirebaseCrud() {
     if (
       isNullOrWhiteSpaces(username) ||
       isNullOrWhiteSpaces(password) ||
-      isNullOrWhiteSpaces(isDoorLocked) ||
+      isNullOrWhiteSpaces(sensorDetect) ||
       isNullOrWhiteSpaces(unlockDoor)
     ) {
       alert("fill all the fields");
@@ -98,7 +98,7 @@ export default function FirebaseCrud() {
 
     set(ref(database, "/Customer/" + username), {
       password: password,
-      isDoorLocked: isDoorLocked,
+      sensorDetect: sensorDetect,
       unlockDoorFunc: unlockDoor,
     });
   };
@@ -110,7 +110,7 @@ export default function FirebaseCrud() {
       .then((snapshot) => {
         if (snapshot.exists()) {
           setPassword(snapshot.val().password);
-          setIsDoorLocked(snapshot.val().isDoorLocked);
+          setsensorDetect(snapshot.val().sensorDetect);
           setUnlockDoor(snapshot.val().unlockDoorFunc);
         } else {
           alert("no data available");
@@ -133,12 +133,12 @@ export default function FirebaseCrud() {
       .then((snapshot) => {
         if (snapshot.exists()) {
           setPassword(snapshot.val().password);
-          setIsDoorLocked(snapshot.val().isDoorLocked);
+          setsensorDetect(snapshot.val().sensorDetect);
           setUnlockDoor(snapshot.val().unlockDoorFunc);
           let tmppass = snapshot.val().password;
-          let tmpisdoorlocked = snapshot.val().isDoorLocked;
+          let tmpsensorDetect = snapshot.val().sensorDetect;
           let x;
-          if (tmpisdoorlocked >= 1) {
+          if (tmpsensorDetect >= 1) {
             x = "YES";
           } else x = "NO";
           let tmpunlockdoor = snapshot.val().unlockDoorFunc;
@@ -147,7 +147,7 @@ export default function FirebaseCrud() {
             "Current Status is:\n password: " +
               tmppass +
               "\n" +
-              "is door locked: " +
+              "is sensor detecting something" +
               x
           );
         } else {
@@ -181,12 +181,12 @@ export default function FirebaseCrud() {
       />
       <br />
 
-      <label>IsDoorLocked</label>
+      <label>sensorDetect</label>
       <input
         type="text"
-        value={isDoorLocked}
+        value={sensorDetect}
         onChange={(e) => {
-          setIsDoorLocked(e.target.value);
+          setsensorDetect(e.target.value);
         }}
       />
       <br />
