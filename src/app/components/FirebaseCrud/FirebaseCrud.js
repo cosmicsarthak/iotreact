@@ -1,6 +1,14 @@
 "use client";
 import FirebaseConfig from "../FirebaseConfig/FirebaseConfig";
-import { ref, set, update, remove, child } from "firebase/database";
+import {
+  ref,
+  set,
+  update,
+  remove,
+  child,
+  get,
+  getDatabase,
+} from "firebase/database";
 import { useState } from "react";
 import "./FirebaseCrud.css";
 
@@ -8,9 +16,9 @@ const database = FirebaseConfig();
 
 export default function FirebaseCrud() {
   let [username, setUsername] = useState("");
-  let [fullname, setFullName] = useState("");
-  let [phone, setPhone] = useState("");
-  let [dob, setDob] = useState("");
+  let [password, setPassword] = useState("");
+  let [isDoorLocked, setIsDoorLocked] = useState("");
+  let [unlockDoor, setUnlockDoor] = useState("");
 
   let isNullOrWhiteSpaces = (value) => {
     value = value.toString();
@@ -30,9 +38,9 @@ export default function FirebaseCrud() {
       .then((snapshot) => {
         if (snapshot.exists()) {
           update(ref(database, "/Customer/" + username), {
-            fullname: fullname,
-            phonenumber: phone,
-            dateofbirth: dob,
+            password: password,
+            isDoorLocked: isDoorLocked,
+            unlockDoorFunc: unlockDoor,
           })
             .then(() => {
               alert("customer updated successfully");
@@ -76,22 +84,22 @@ export default function FirebaseCrud() {
   };
 
   let InsertData = () => {
-    // const dbref = ref(database);
+    const dbref = ref(database);
 
     if (
       isNullOrWhiteSpaces(username) ||
-      isNullOrWhiteSpaces(fullname) ||
-      isNullOrWhiteSpaces(phone) ||
-      isNullOrWhiteSpaces(dob)
+      isNullOrWhiteSpaces(password) ||
+      isNullOrWhiteSpaces(isDoorLocked) ||
+      isNullOrWhiteSpaces(unlockDoor)
     ) {
       alert("fill all the fields");
       return;
     }
 
     set(ref(database, "/Customer/" + username), {
-      fullname: fullname,
-      phonenumber: phone,
-      dateofbirth: dob,
+      password: password,
+      isDoorLocked: isDoorLocked,
+      unlockDoorFunc: unlockDoor,
     });
   };
 
@@ -101,11 +109,48 @@ export default function FirebaseCrud() {
     get(child(dbref, "Customer/" + username))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          setFullName(snapshot.val().fullname);
-          setPhone(snapshot.val().phonenumber);
-          setDob(snapshot.val().dateofbirth);
+          setPassword(snapshot.val().password);
+          setIsDoorLocked(snapshot.val().isDoorLocked);
+          setUnlockDoor(snapshot.val().unlockDoorFunc);
         } else {
           alert("no data available");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        alert("select: error data retrieval was unsuccessful");
+      });
+  };
+  let RefreshData = () => {
+    const dbref = ref(database);
+
+    if (isNullOrWhiteSpaces(username)) {
+      alert("Username is required to get data");
+      return;
+    }
+
+    get(child(dbref, "/Customer/" + username))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          setPassword(snapshot.val().password);
+          setIsDoorLocked(snapshot.val().isDoorLocked);
+          setUnlockDoor(snapshot.val().unlockDoorFunc);
+          let tmppass = snapshot.val().password;
+          let tmpisdoorlocked = snapshot.val().isDoorLocked;
+          let x;
+          if (tmpisdoorlocked >= 1) {
+            x = "YES";
+          } else x = "NO";
+          let tmpunlockdoor = snapshot.val().unlockDoorFunc;
+
+          alert(
+            "Current Status is:\n password: " +
+              tmppass +
+              "\n" +
+              "is door locked: " +
+              x
+          );
+        } else {
         }
       })
       .catch((error) => {
@@ -126,32 +171,32 @@ export default function FirebaseCrud() {
       />
       <br />
 
-      <label>Full Name</label>
+      <label>Password</label>
       <input
         type="text"
-        value={fullname}
+        value={password}
         onChange={(e) => {
-          setFullName(e.target.value);
+          setPassword(e.target.value);
         }}
       />
       <br />
 
-      <label>Phone Number</label>
+      <label>IsDoorLocked</label>
       <input
         type="text"
-        value={phone}
+        value={isDoorLocked}
         onChange={(e) => {
-          setPhone(e.target.value);
+          setIsDoorLocked(e.target.value);
         }}
       />
       <br />
 
-      <label>Date of Birth</label>
+      <label>Unlock Door (0/1)</label>
       <input
         type="text"
-        value={dob}
+        value={unlockDoor}
         onChange={(e) => {
-          setDob(e.target.value);
+          setUnlockDoor(e.target.value);
         }}
       />
       <br />
@@ -160,6 +205,7 @@ export default function FirebaseCrud() {
       <button onClick={UpdateData}>Update data</button>
       <button onClick={DeleteData}>Delete data</button>
       <button onClick={SelectData}>Select data</button>
+      <button onClick={RefreshData}>Refresh data</button>
     </>
   );
 }
